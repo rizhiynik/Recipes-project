@@ -17,8 +17,9 @@ authenticator = stauth.Authenticate(
     names,
     usernames,
     hashed_passwords,
-    "recipes_project",
+    "recipes_project",  # For a reason, doesn't return to login page
     "adcdef",
+    cookie_expiry_days=30,
 )
 
 name, authenticaton_status, username = authenticator.login("Login", "main")
