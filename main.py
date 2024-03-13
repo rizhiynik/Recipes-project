@@ -4,6 +4,9 @@ from pathlib import Path
 import streamlit as st
 import streamlit_authenticator as stauth
 
+# --- SETTING CONFIGURATION ---
+st.set_page_config(page_title="Recipes Project")
+
 # --- USER AUTHENTICATION ---
 names = ["Peter Parker", "Rebecca Miller"]
 usernames = ["pparker", "rmiller"]
