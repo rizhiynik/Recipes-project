@@ -20,7 +20,7 @@ authenticator = stauth.Authenticate(
     names,
     usernames,
     hashed_passwords,
-    "recipes_project",  # For a reason, doesn't return to login page
+    "recipes_project",
     "adcdef",
     cookie_expiry_days=30,
 )
@@ -29,10 +29,8 @@ name, authenticaton_status, username = authenticator.login("Login", "main")
 
 if authenticaton_status is False:
     st.error("Username/password is incorrect")
-
 if authenticaton_status is None:
     st.warning("Please enter your username and password")
-
 if authenticaton_status:
     authenticator.logout("Logout", "sidebar")
     st.sidebar.title(f"Welcome {name}")
