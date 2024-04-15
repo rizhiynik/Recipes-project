@@ -14,7 +14,7 @@ from torchvision.models.detection import (
     FasterRCNN_ResNet50_FPN_V2_Weights,
 )
 
-from transformers import (
+from transformers import (  # type: ignore
     # AutoTokenizer,
     # AutoModelForCausalLM,
     # BitsAndBytesConfig,
@@ -150,28 +150,32 @@ if authenticaton_status:
     st.title("Object Detector :tea: :coffee:")
     upload = st.file_uploader(label="Upload Image Here:", type=["png", "jpg", "jpeg"])
 
-    if upload:
+    if upload is not None:
         img = Image.open(upload)
 
-        prediction = make_prediction(img)
-        img_with_bbox = create_image_with_bboxes(
-            np.array(img).transpose(2, 0, 1), prediction
-        )
+        st.image(img, caption="Uploaded Image", use_column_width=True)
 
-        fig = plt.figure(figsize=(12, 12))
-        ax = fig.add_subplot(111)
-        plt.imshow(img_with_bbox)
-        plt.xticks([], [])
-        plt.yticks([], [])
-        ax.spines[["top", "bottom", "right", "left"]].set_visible(False)
+        if st.button("Generate"):
 
-        st.pyplot(fig, use_container_width=True)
+            prediction = make_prediction(img)
+            img_with_bbox = create_image_with_bboxes(
+                np.array(img).transpose(2, 0, 1), prediction
+            )
 
-        del prediction["boxes"]
-        st.header("Predicted Probabilities")
-        st.write(prediction)
+            fig = plt.figure(figsize=(12, 12))
+            ax = fig.add_subplot(111)
+            plt.imshow(img_with_bbox)
+            plt.xticks([], [])
+            plt.yticks([], [])
+            ax.spines[["top", "bottom", "right", "left"]].set_visible(False)
 
-        ingredients = prediction["labels"]
-        ingredients = ["tomato", "cheese", "pasta"]
-        recipe = generate_recipe(ingredients)
-        st.write(recipe)
+            st.pyplot(fig, use_container_width=True)
+
+            del prediction["boxes"]
+            st.header("Predicted Probabilities")
+            st.write(prediction)
+
+            ingredients = prediction["labels"]
+            # ingredients = ["bread", "cheese", "sausage"]
+            recipe = generate_recipe(ingredients)
+            st.write(recipe)
