@@ -14,15 +14,7 @@ from torchvision.models.detection import (
     FasterRCNN_ResNet50_FPN_V2_Weights,
 )
 
-from transformers import (  # type: ignore
-    # AutoTokenizer,
-    # AutoModelForCausalLM,
-    # BitsAndBytesConfig,
-    # GPT2LMHeadModel,
-    # GPT2Tokenizer,
-    T5Tokenizer,
-    T5ForConditionalGeneration,
-)
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 # --- SETTING CONFIGURATION ---
 st.set_page_config(page_title="Recipes Project")
@@ -88,48 +80,16 @@ def create_image_with_bboxes(img, prediction):
 
 
 # --- GENERATIVE MODEL  ---
-# bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-
-# model_id = "CohereForAI/c4ai-command-r-plus"
-# tokenizer = AutoTokenizer.from_pretrained(model_id)
-# gen_model = AutoModelForCausalLM.from_pretrained(model_id, quantization_config=bnb_config)
-
-# def generate_recipe(ingredients):
-#     messages = [{"role": "user", "content": "Hello, how are you?"}]
-#     input_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True, return_tensors="pt")
-
-#     gen_tokens = gen_model.generate(
-#         input_ids,
-#         max_new_tokens=100,
-#         do_sample=True,
-#         temperature=0.3,
-#         )
-
-#     recipe = tokenizer.decode(gen_tokens[0])
-
-#     return recipe
-
-# gen_model = GPT2LMHeadModel.from_pretrained("gpt2")
-# tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
-
-# def generate_recipe(ingredients):
-#     input_text = "Ingredients:" + ", ".join(ingredients) + "\nInstructions:"
-#     input_ids = tokenizer.encode(input_text, return_tensors="pt")
-
-#     output = gen_model.generate(input_ids, max_length=200, num_return_sequences=1, pad_token_id=tokenizer.eos_token_id)
-
-#     recipe = tokenizer.decode(output[0], skip_special_tokens=True)
-
-#     return recipe
-
-tokenizer = T5Tokenizer.from_pretrained("google/flan-t5-small")
-gen_model = T5ForConditionalGeneration.from_pretrained("google/flan-t5-small")
+tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-small")
+gen_model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-small")
 
 
 def generate_recipe(ingredients):
     input_text = (
-        "Provide posibles recipes (at least 3 different options) and step-by-step instructions how to make them with following ingredients:"
+        "Your job is to assist a user with cooking some meal for a dinner. Here are some ingredients, that he has:"
         + ", ".join(ingredients)
+        + ". Provide at least 3 different recipes for the dinner with given ingredients. "
+        + "Make sure that recipes are full and detailed"
     )
     input_ids = tokenizer(input_text, return_tensors="pt").input_ids
 
@@ -152,6 +112,7 @@ if authenticaton_status:
 
     if upload is not None:
         img = Image.open(upload)
+        img.save("food.jpg")
 
         st.image(img, caption="Uploaded Image", use_column_width=True)
 
@@ -173,9 +134,8 @@ if authenticaton_status:
 
             del prediction["boxes"]
             st.header("Predicted Probabilities")
-            st.write(prediction)
+            st.write([x for x in prediction["labels"]])
 
             ingredients = prediction["labels"]
-            # ingredients = ["bread", "cheese", "sausage"]
             recipe = generate_recipe(ingredients)
             st.write(recipe)
